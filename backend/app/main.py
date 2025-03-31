@@ -1,9 +1,10 @@
 """
 Main FastAPI application module.
 """
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse, StreamingResponse
 from app.config import get_settings, setup_logging
 from app.routers import chat, health, llm
 import logging
@@ -72,7 +73,12 @@ async def log_requests(request: Request, call_next):
                             body_json[field] = "***REDACTED***"
                     request_body = json.dumps(body_json)
                 except json.JSONDecodeError:
-                    pass
+                    # If the request is to a JSON endpoint but has invalid JSON, return 400
+                    if request.headers.get("content-type") == "application/json":
+                        return JSONResponse(
+                            status_code=400,
+                            content={"detail": "Invalid JSON format"}
+                        )
         except Exception as e:
             logger.warning(f"Failed to read request body: {str(e)}")
     
@@ -101,11 +107,12 @@ async def log_requests(request: Request, call_next):
         # Calculate duration
         duration = time.time() - start_time
         
-        # Get response body if enabled
+        # Get response body if enabled and possible
         response_body = None
-        if settings.LOG_RESPONSE_BODY_ENABLED and response.body:
+        if settings.LOG_RESPONSE_BODY_ENABLED and not isinstance(response, StreamingResponse):
             try:
-                response_body = response.body.decode()
+                if hasattr(response, "body"):
+                    response_body = response.body.decode()
             except Exception as e:
                 logger.warning(f"Failed to decode response body: {str(e)}")
         
@@ -124,7 +131,7 @@ async def log_requests(request: Request, call_next):
             }
         )
         
-        # Log performance metrics if enabled
+        # Log performance metrics if request was slow
         if settings.LOG_PERF_ENABLED and duration > 1.0:  # Log slow requests
             logger.warning(
                 "Slow request detected",
@@ -140,6 +147,27 @@ async def log_requests(request: Request, call_next):
         
         return response
         
+    except HTTPException as e:
+        # Handle HTTP exceptions (like validation errors)
+        duration = time.time() - start_time
+        logger.warning(
+            "Request failed with HTTP exception",
+            extra={
+                "request_id": request_id,
+                "error": str(e),
+                "status_code": e.status_code,
+                "duration": duration,
+                "duration_ms": duration * 1000,
+                "path": request.url.path,
+                "method": request.method,
+                "timestamp": datetime.utcnow().isoformat(),
+                "system_metrics": get_system_metrics()
+            }
+        )
+        return JSONResponse(
+            status_code=e.status_code,
+            content={"detail": str(e)}
+        )
     except Exception as e:
         # Calculate duration
         duration = time.time() - start_time
@@ -161,7 +189,10 @@ async def log_requests(request: Request, call_next):
             },
             exc_info=True
         )
-        raise
+        return JSONResponse(
+            status_code=422,
+            content={"detail": f"Error processing request: {str(e)}"}
+        )
 
 # Add CORS middleware
 app.add_middleware(

@@ -1,0 +1,52 @@
+2025-03-30 20:48:36,731 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:37,262 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:37,868 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,185 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,239 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,291 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,344 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,706 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,760 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,813 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,865 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:38,916 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'
+2025-03-30 20:48:39,299 | ERROR    | app.main | 11724 | MainThread | Request failed
+Traceback (most recent call last):
+  File "C:\Users\jorda\OneDrive\Desktop\CodeAndAi\Take3Tech\ChatOpsMVP\backend\app\main.py", line 106, in log_requests
+AttributeError: '_StreamingResponse' object has no attribute 'body'

@@ -17,15 +17,24 @@ LOG_FILES = {
     "app": "app.log",
     "error": "error.log",
     "json": "json.log",
-    "performance": "performance.log"
+    "performance": "perf.log"  # Fixed file name to match config
 }
 
 async def clean_logs():
     """Clean all log files before testing."""
     for log_file in LOG_FILES.values():
         log_path = LOG_DIR / log_file
-        if log_path.exists():
-            log_path.unlink()
+        try:
+            if log_path.exists():
+                # Try to open and truncate the file instead of deleting
+                with open(log_path, 'w') as f:
+                    f.truncate(0)
+        except (PermissionError, OSError) as e:
+            # If we can't truncate, just log a warning and continue
+            print(f"Warning: Could not clean log file {log_path}: {str(e)}")
+            continue
+    
+    # Create logs directory if it doesn't exist
     LOG_DIR.mkdir(exist_ok=True)
 
 def check_log_format(log_file: Path) -> dict:

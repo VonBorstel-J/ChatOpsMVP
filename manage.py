@@ -14,7 +14,7 @@ from pathlib import Path
 
 def find_process_by_port(port):
     """Find process using specified port."""
-    for proc in psutil.process_iter(['pid', 'name', 'connections']):
+    for proc in psutil.process_iter(['pid', 'name']):
         try:
             for conn in proc.connections():
                 if conn.laddr.port == port:

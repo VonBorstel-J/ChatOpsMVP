@@ -1,14 +1,15 @@
 """
 Chat endpoints for handling chat interactions.
 """
-from fastapi import APIRouter, HTTPException, Depends, Request
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, HTTPException, Depends, Request, status
+from pydantic import BaseModel, Field, ValidationError
 from typing import List, Optional
 from datetime import datetime
 import logging
 import time
 import uuid
 from app.config import get_settings, Settings
+import json
 
 # Initialize logger
 logger = logging.getLogger(__name__)
@@ -44,6 +45,40 @@ class ChatRequest(BaseModel):
             "messages": [msg.to_log_dict() for msg in self.messages]
         }
 
+    @classmethod
+    def validate_request(cls, data: dict) -> "ChatRequest":
+        """Validate request data and return instance or raise appropriate error."""
+        try:
+            return cls(**data)
+        except ValidationError as e:
+            logger.warning(
+                "Chat request validation failed",
+                extra={
+                    "error": str(e),
+                    "error_type": "ValidationError",
+                    "request_data": data,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(e)
+            )
+        except Exception as e:
+            logger.error(
+                "Chat request parsing failed",
+                extra={
+                    "error": str(e),
+                    "error_type": e.__class__.__name__,
+                    "request_data": data,
+                    "timestamp": datetime.utcnow().isoformat()
+                }
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid request format"
+            )
+
 class ChatResponse(BaseModel):
     """Chat response model."""
     message: Message
@@ -58,16 +93,14 @@ class ChatResponse(BaseModel):
 
 @router.post("/chat", response_model=ChatResponse)
 async def create_chat(
-    request: ChatRequest,
-    fastapi_request: Request,
+    request: Request,
     settings: Settings = Depends(get_settings)
 ):
     """
     Create a new chat message.
     
     Args:
-        request (ChatRequest): Chat request containing messages and options
-        fastapi_request (Request): FastAPI request object for logging
+        request (Request): Raw request object for validation
         settings (Settings): Application settings
     
     Returns:
@@ -79,18 +112,22 @@ async def create_chat(
     request_id = str(uuid.uuid4())
     start_time = time.time()
     
-    # Log incoming request
-    logger.info(
-        "Chat request received",
-        extra={
-            "request_id": request_id,
-            "client_host": fastapi_request.client.host,
-            "request_data": request.to_log_dict(),
-            "timestamp": datetime.utcnow().isoformat()
-        }
-    )
-    
     try:
+        # Parse and validate request body
+        body = await request.json()
+        chat_request = ChatRequest.validate_request(body)
+        
+        # Log incoming request
+        logger.info(
+            "Chat request received",
+            extra={
+                "request_id": request_id,
+                "client_host": request.client.host,
+                "request_data": chat_request.to_log_dict(),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+        
         # This is a placeholder response - we'll implement actual LLM integration in Phase 3
         conversation_id = str(uuid.uuid4())
         response = ChatResponse(
@@ -126,18 +163,51 @@ async def create_chat(
                     "conversation_id": conversation_id,
                     "duration": duration,
                     "duration_ms": duration * 1000,
-                    "message_count": len(request.messages),
+                    "message_count": len(chat_request.messages),
                     "timestamp": datetime.utcnow().isoformat()
                 }
             )
         
         return response
         
-    except Exception as e:
-        # Calculate error duration
+    except json.JSONDecodeError as e:
+        # Handle invalid JSON format
         duration = time.time() - start_time
+        logger.warning(
+            "Invalid JSON in chat request",
+            extra={
+                "request_id": request_id,
+                "error": str(e),
+                "error_type": "JSONDecodeError",
+                "duration": duration,
+                "duration_ms": duration * 1000,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid JSON format"
+        )
         
-        # Log error details
+    except HTTPException as e:
+        # Re-raise HTTP exceptions (like validation errors)
+        duration = time.time() - start_time
+        logger.warning(
+            "Chat request failed with HTTP exception",
+            extra={
+                "request_id": request_id,
+                "error": str(e),
+                "status_code": e.status_code,
+                "duration": duration,
+                "duration_ms": duration * 1000,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+        )
+        raise
+        
+    except Exception as e:
+        # Handle unexpected errors
+        duration = time.time() - start_time
         logger.error(
             "Chat request failed",
             extra={
@@ -146,13 +216,11 @@ async def create_chat(
                 "error_type": e.__class__.__name__,
                 "duration": duration,
                 "duration_ms": duration * 1000,
-                "request_data": request.to_log_dict(),
                 "timestamp": datetime.utcnow().isoformat()
             },
             exc_info=True
         )
-        
         raise HTTPException(
-            status_code=500,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Error processing chat request: {str(e)}"
         ) 
